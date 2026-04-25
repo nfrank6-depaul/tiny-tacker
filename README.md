@@ -1,4 +1,4 @@
-# tiny-tacker
+# tiny-tackers
 This is an endeavour to gamify reinforcement learning education.
 The project is view only and there is no license. 
 No one excpet the owner (myself) has permission to contribute to this project. 
