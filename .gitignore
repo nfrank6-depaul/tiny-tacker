@@ -1,1 +1,6 @@
 notebooks/Initialize_Git_and_GDrive.ipynb
+videos/
+models/
+logs/
+*.mp4
+*.zip
