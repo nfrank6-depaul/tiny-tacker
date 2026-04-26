@@ -13,8 +13,26 @@ builtins.quit = lambda *args, **kwargs: None
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(REPO_ROOT)
 
-sys.path.insert(0, "gym_sailing_environments/gym_sailing_gabo-tor")
-import gym_sailing  # noqa: F401
+GYM_SAILING_PARENT = os.path.join(
+    REPO_ROOT,
+    "gym_sailing_environments",
+    "gym_sailing_gabo-tor",
+)
+GYM_SAILING_PACKAGE = os.path.join(GYM_SAILING_PARENT, "gym_sailing")
+
+if not os.path.isdir(GYM_SAILING_PACKAGE):
+    raise FileNotFoundError(
+        "Could not find the local gym_sailing package.\n"
+        f"Expected package folder at: {GYM_SAILING_PACKAGE}\n"
+        f"Current working directory: {os.getcwd()}\n"
+        "Confirm that the repo contains: "
+        "gym_sailing_environments/gym_sailing_gabo-tor/gym_sailing"
+    )
+
+sys.path.insert(0, GYM_SAILING_PARENT)
+# type ignore below so I stop seeing import error in VS code. package is here, but is deined by path above.
+import gym_sailing  # type: ignore
+print("Loaded gym_sailing from:", gym_sailing.__file__)
 
 ENV_ID = "Sailboat-v0"
 MAX_STEPS = 10_000
