@@ -9,6 +9,9 @@ import pygame
 
 builtins.quit = lambda *args, **kwargs: None
 
+
+
+
 # Resolve repo root from this script location:
 # tiny-tackers/tiny_tackers/human_race_tt.py -> tiny-tackers/
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -33,12 +36,28 @@ if not os.path.isdir(GYM_SAILING_PACKAGE):
 sys.path.insert(0, GYM_SAILING_PARENT)
 # type ignore below so I stop seeing import error in VS code. package is here, but is deined by path above.
 import gym_sailing  # type: ignore
-print("Loaded gym_sailing from:", gym_sailing.__file__)
+import gym_sailing.envs.sailboat_env as sailboat_module  # type: ignore
+import gym_sailing.envs.boat_env as boat_module  # type: ignore
+import gym_sailing.utils.renderer as renderer_module  # type: ignore
 
+print("Loaded gym_sailing from:", gym_sailing.__file__)
+print("Loaded sailboat_env from:", sailboat_module.__file__)
+print("Loaded boat_env from:", boat_module.__file__)
+print("Loaded renderer from:", renderer_module.__file__)
 ENV_ID = "SailboatOlympicTriangle-v0"
 MAX_STEPS = 10_000
 RESULTS_DIR = "data/results"
 RESULTS_PATH = os.path.join(RESULTS_DIR, "human_race_score.csv")
+
+import sys
+
+print("\n--- MODULE CACHE CHECK ---")
+
+for name, module in sys.modules.items():
+
+    if "gym_sailing" in name:
+
+        print(name, "->", getattr(module, "__file__", "built-in"))
 
 
 def get_human_action(env):
@@ -59,8 +78,8 @@ def get_human_action(env):
 def run_human_episode():
     pygame.init()
     env = gym.make(ENV_ID, render_mode="human")
-    print("Created environment:", env.unwrapped.__class__.__name__)
-    print("Environment id:", ENV_ID)
+    print("Created environment:", env.unwrapped.__class__)
+    print("Reset method file:", env.unwrapped.reset.__code__.co_filename)
     if hasattr(env.unwrapped, "MARKS"):
         print("Race marks:", env.unwrapped.MARKS)
     else:
