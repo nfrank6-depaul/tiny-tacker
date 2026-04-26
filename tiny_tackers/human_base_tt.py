@@ -31,7 +31,8 @@ if not os.path.isdir(GYM_SAILING_PACKAGE):
     )
 
 sys.path.insert(0, GYM_SAILING_PARENT)
-import gym_sailing  # noqa: F401
+# type ignore below so I stop seeing import error in VS code. package is here, but is deined by path above.
+import gym_sailing  # type: ignore
 print("Loaded gym_sailing from:", gym_sailing.__file__)
 
 ENV_ID = "Sailboat-v0"
