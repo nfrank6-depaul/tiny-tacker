@@ -62,6 +62,8 @@ class SailboatRaceEnv(BoatEnv):
     FINISH_REWARD = 100
     ROUNDING_ZONE_MULTIPLIER = 2.5
     INVALID_ROUNDING_PENALTY = 1.0
+    VALID_PORT_ROUNDING_BONUS = 0.5
+    EXIT_ZONE_PROGRESS_WEIGHT = 5.0
 
     def __init__(self, render_mode=None):
         super().__init__(render_mode)
@@ -161,6 +163,11 @@ class SailboatRaceEnv(BoatEnv):
         terminated = False
         reward = -0.1
 
+        current_distance = np.linalg.norm(distance2target)
+        previous_distance = np.linalg.norm(self.prev_distance2target)
+        inside_rounding_zone = self._inside_rounding_zone(distance2target)
+        target_is_to_port = self._target_is_to_port()
+
         if self._final_target_passed_to_port(distance2target):
             reward = self.FINISH_REWARD
             terminated = True
@@ -168,9 +175,6 @@ class SailboatRaceEnv(BoatEnv):
         elif self._target_hit_by_valid_rounding(distance2target):
             reward = self.MARK_REWARD
             self._advance_target()
-
-        elif self._inside_rounding_zone(distance2target) and not self._target_is_to_port():
-            reward -= self.INVALID_ROUNDING_PENALTY
 
         elif (
             self.boat.x < 0
@@ -182,10 +186,22 @@ class SailboatRaceEnv(BoatEnv):
             terminated = True
 
         else:
-            reward += 10 * (
-                np.linalg.norm(self.prev_distance2target, 8)
-                - np.linalg.norm(distance2target, 8)
-            )
+            # Preserve original reward shaping: reward progress toward the active target.
+            reward += 10 * (previous_distance - current_distance)
+
+            # Extra race shaping:
+            # - Reward entering/being in the rounding zone with the target on port side.
+            # - Once a valid port rounding has started, reward moving outward toward the exit zone.
+            if inside_rounding_zone and target_is_to_port:
+                reward += self.VALID_PORT_ROUNDING_BONUS
+
+                exit_progress = current_distance - previous_distance
+                if self.valid_port_rounding_started and exit_progress > 0:
+                    reward += self.EXIT_ZONE_PROGRESS_WEIGHT * exit_progress
+
+            elif inside_rounding_zone and not target_is_to_port:
+                reward -= self.INVALID_ROUNDING_PENALTY
+
             self.prev_distance2target = distance2target
 
         self.last_reward = reward
