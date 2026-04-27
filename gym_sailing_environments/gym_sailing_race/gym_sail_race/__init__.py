@@ -3,7 +3,7 @@ from gymnasium.envs.registration import register
 register(
     id="SailboatRace-v0",
     entry_point="gym_sail_race.envs:SailboatRaceEnv",
-    max_episode_steps=3000,
+    max_episode_steps=10000,
 )
 
 register(
