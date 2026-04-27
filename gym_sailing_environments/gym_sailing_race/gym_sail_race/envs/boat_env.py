@@ -146,6 +146,13 @@ class BoatEnv(gym.Env):
                 )
             ],
             target=self.TARGET,
+            targets=getattr(self, "MARKS", None),
+            active_target_index=getattr(self, "active_target_index", None),
+            start_line=(
+                getattr(self, "start_line", None)
+                if getattr(self, "show_start_line", False)
+                else None
+            ),
             stepnum=self.stepnum,
             reward=self.last_reward,
             render_mode=self.render_mode,
@@ -169,5 +176,4 @@ class BoatDiscreteEnv(BoatEnv):
 
     def step(self, action):
         action = action - 1
-        return super().step([action])
         return super().step([action])

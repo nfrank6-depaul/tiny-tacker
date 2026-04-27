@@ -40,6 +40,14 @@ TARGET_SEQUENCE = [
     WINDWARD_MARK,
 ]
 
+# Starting line: slightly windward of the leeward mark, extending to the right.
+START_LINE_Y = LEEWARD_MARK[1] + 2.0
+START_LINE = (
+    (LEEWARD_MARK[0], START_LINE_Y),
+    (min(50.0, LEEWARD_MARK[0] + 10.0), START_LINE_Y),
+)
+
+
 class SailboatRaceEnv(BoatEnv):
     MARKS = RACE_MARKS
     TARGET_SEQUENCE = TARGET_SEQUENCE
@@ -50,10 +58,31 @@ class SailboatRaceEnv(BoatEnv):
         super().__init__(render_mode)
         self.mark_index = 0
         self.TARGET = self.TARGET_SEQUENCE[self.mark_index]
+        self.start_line = START_LINE
+        self.show_start_line = True
+        self.prev_boat_y = None
 
     @property
     def active_target_index(self):
         return self.MARKS.index(self.TARGET)
+    
+    def step(self, action):
+        previous_y = self.boat.y
+        obs, reward, terminated, truncated, info = super().step(action)
+
+        if self.show_start_line:
+            line_start, line_end = self.start_line
+            line_y = line_start[1]
+            min_x = min(line_start[0], line_end[0])
+            max_x = max(line_start[0], line_end[0])
+
+            crossed_windward = previous_y < line_y <= self.boat.y
+            within_line_width = min_x <= self.boat.x <= max_x
+
+            if crossed_windward and within_line_width:
+                self.show_start_line = False
+
+        return obs, reward, terminated, truncated, info
 
     def _advance_target(self):
         self.mark_index += 1
@@ -96,7 +125,9 @@ class SailboatRaceEnv(BoatEnv):
     def reset(self, options=None, seed=None):
         self.mark_index = 0
         self.TARGET = self.TARGET_SEQUENCE[self.mark_index]
-
+        self.start_line = START_LINE
+        self.show_start_line = True
+        self.prev_boat_y = None
         start_x, start_y = LEEWARD_MARK
         self.boat = SailBoat(
             x=start_x + self.BOAT_LENGTH,

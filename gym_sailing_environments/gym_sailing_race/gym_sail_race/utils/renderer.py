@@ -50,7 +50,18 @@ class Renderer:
         self.window = None
         self.clock = None
 
-    def _render_frame(self, boats, target, stepnum, reward, render_mode, fps):
+    def _render_frame(
+        self,
+        boats,
+        target,
+        stepnum,
+        reward,
+        render_mode,
+        fps,
+        targets=None,
+        active_target_index=None,
+        start_line=None,
+    ):
         if self.window is None and render_mode in ["human", "rgb_array"]:
             # FIXME: self.window should be used only in human mode,
             # in rgb mode there is no need to create a window, only the surface
@@ -66,7 +77,15 @@ class Renderer:
             self.clock = pygame.time.Clock()
 
         self.draw_water()
-        self.draw_target(target)
+
+        if start_line is not None:
+            self.draw_start_line(start_line)
+
+        if targets is None:
+            self.draw_target(target, is_active=True)
+        else:
+            for idx, mark in enumerate(targets):
+                self.draw_target(mark, is_active=(idx == active_target_index))
 
         for n, boat in enumerate(boats):
             if n == 0:  # for the first boat only, draw the trail
@@ -234,16 +253,34 @@ class Renderer:
             width=2,
         )
 
-    def draw_target(self, target):
+    def draw_start_line(self, start_line):
+        line_start, line_end = start_line
+        pygame.draw.line(
+            self.window,
+            (255, 255, 255),
+            (int(self.scale * line_start[0]), int(self.scale * line_start[1])),
+            (int(self.scale * line_end[0]), int(self.scale * line_end[1])),
+            width=3,
+        )
 
-
-        # Draw the target
+    def draw_target(self, target, is_active=True):
         target_radius = int(self.target_rad * self.scale)
+        target_color = Renderer.TARGET_COLOR if is_active else (240, 240, 240)
+        outline_color = (0, 0, 0)
+        target_center = (int(self.scale * target[0]), int(self.scale * target[1]))
+
         pygame.draw.circle(
             self.window,
-            Renderer.TARGET_COLOR,
-            (int(self.scale * target[0]), int(self.scale * target[1])),
+            target_color,
+            target_center,
             target_radius,
+        )
+        pygame.draw.circle(
+            self.window,
+            outline_color,
+            target_center,
+            target_radius,
+            width=2,
         )
 
     def close(self):
@@ -256,5 +293,4 @@ class Renderer:
 
 
 def norm(angle):
-    return (angle + np.pi) % (2 * np.pi) - np.pi
     return (angle + np.pi) % (2 * np.pi) - np.pi
