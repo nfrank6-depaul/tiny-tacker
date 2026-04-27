@@ -60,7 +60,8 @@ class Renderer:
         fps,
         targets=None,
         active_target_index=None,
-        start_line=None,
+        course_line=None,
+        course_line_label=None,
     ):
         if self.window is None and render_mode in ["human", "rgb_array"]:
             # FIXME: self.window should be used only in human mode,
@@ -78,8 +79,8 @@ class Renderer:
 
         self.draw_water()
 
-        if start_line is not None:
-            self.draw_start_line(start_line)
+        if course_line is not None:
+            self.draw_course_line(course_line, course_line_label)
 
         if targets is None:
             self.draw_target(target, is_active=True)
@@ -253,15 +254,28 @@ class Renderer:
             width=2,
         )
 
-    def draw_start_line(self, start_line):
-        line_start, line_end = start_line
+    def draw_course_line(self, course_line, label=None):
+        line_start, line_end = course_line
+        start_px = (int(self.scale * line_start[0]), int(self.scale * line_start[1]))
+        end_px = (int(self.scale * line_end[0]), int(self.scale * line_end[1]))
+
         pygame.draw.line(
             self.window,
             (255, 255, 255),
-            (int(self.scale * line_start[0]), int(self.scale * line_start[1])),
-            (int(self.scale * line_end[0]), int(self.scale * line_end[1])),
+            start_px,
+            end_px,
             width=3,
         )
+
+        if label is not None:
+            label_surface = self.normal_font.render(
+                label,
+                True,
+                (255, 255, 255),
+            )
+            label_x = min(start_px[0], end_px[0])
+            label_y = max(0, min(start_px[1], end_px[1]) - 25)
+            self.window.blit(label_surface, (label_x, label_y))
 
     def draw_target(self, target, is_active=True):
         target_radius = int(self.target_rad * self.scale)

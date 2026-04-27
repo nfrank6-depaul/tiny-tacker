@@ -148,11 +148,8 @@ class BoatEnv(gym.Env):
             target=self.TARGET,
             targets=getattr(self, "MARKS", None),
             active_target_index=getattr(self, "active_target_index", None),
-            start_line=(
-                getattr(self, "start_line", None)
-                if getattr(self, "show_start_line", False)
-                else None
-            ),
+            course_line=getattr(self, "active_course_line", None),
+            course_line_label=getattr(self, "active_course_line_label", None),
             stepnum=self.stepnum,
             reward=self.last_reward,
             render_mode=self.render_mode,

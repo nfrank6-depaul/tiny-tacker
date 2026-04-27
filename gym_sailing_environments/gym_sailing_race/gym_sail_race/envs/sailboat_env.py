@@ -47,6 +47,13 @@ START_LINE = (
     (min(50.0, LEEWARD_MARK[0] + 10.0), START_LINE_Y),
 )
 
+# Finish line: slightly leeward of the windward mark, extending to the right.
+FINISH_LINE_Y = WINDWARD_MARK[1] - 2.0
+FINISH_LINE = (
+    (WINDWARD_MARK[0], FINISH_LINE_Y),
+    (min(50.0, WINDWARD_MARK[0] + 10.0), FINISH_LINE_Y),
+)
+
 
 class SailboatRaceEnv(BoatEnv):
     MARKS = RACE_MARKS
@@ -62,12 +69,33 @@ class SailboatRaceEnv(BoatEnv):
         self.TARGET = self.TARGET_SEQUENCE[self.mark_index]
         self.start_line = START_LINE
         self.show_start_line = True
+        self.finish_line = FINISH_LINE
         self.prev_boat_y = None
         self.valid_port_rounding_started = False
 
     @property
     def active_target_index(self):
         return self.MARKS.index(self.TARGET)
+
+    @property
+    def show_finish_line(self):
+        return self.mark_index == len(self.TARGET_SEQUENCE) - 1
+
+    @property
+    def active_course_line(self):
+        if self.show_start_line:
+            return self.start_line
+        if self.show_finish_line:
+            return self.finish_line
+        return None
+
+    @property
+    def active_course_line_label(self):
+        if self.show_start_line:
+            return "START"
+        if self.show_finish_line:
+            return "FINISH"
+        return None
 
     def _target_vector(self):
         return np.array(self.TARGET) - np.array([self.boat.x, self.boat.y])
@@ -171,6 +199,7 @@ class SailboatRaceEnv(BoatEnv):
         self.TARGET = self.TARGET_SEQUENCE[self.mark_index]
         self.start_line = START_LINE
         self.show_start_line = True
+        self.finish_line = FINISH_LINE
         self.prev_boat_y = None
         self.valid_port_rounding_started = False
         start_x, start_y = LEEWARD_MARK
