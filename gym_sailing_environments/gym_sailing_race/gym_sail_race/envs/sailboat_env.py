@@ -99,6 +99,13 @@ class SailboatRaceEnv(BoatEnv):
 
         return False
 
+    def _final_target_passed_to_port(self, distance2target):
+        return (
+            self.mark_index == len(self.TARGET_SEQUENCE) - 1
+            and self._inside_rounding_zone(distance2target)
+            and self._target_is_to_port()
+        )
+
     def step(self, action):
         previous_y = self.boat.y
         obs, reward, terminated, truncated, info = super().step(action)
@@ -129,13 +136,13 @@ class SailboatRaceEnv(BoatEnv):
         terminated = False
         reward = -0.1
 
-        if self._target_hit_by_valid_rounding(distance2target):
-            if self.mark_index == len(self.TARGET_SEQUENCE) - 1:
-                reward = self.FINISH_REWARD
-                terminated = True
-            else:
-                reward = self.MARK_REWARD
-                self._advance_target()
+        if self._final_target_passed_to_port(distance2target):
+            reward = self.FINISH_REWARD
+            terminated = True
+
+        elif self._target_hit_by_valid_rounding(distance2target):
+            reward = self.MARK_REWARD
+            self._advance_target()
 
         elif self._inside_rounding_zone(distance2target) and not self._target_is_to_port():
             reward -= self.INVALID_ROUNDING_PENALTY
