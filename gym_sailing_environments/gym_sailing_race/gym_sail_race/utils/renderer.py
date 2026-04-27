@@ -235,32 +235,7 @@ class Renderer:
         )
 
     def draw_target(self, target):
-        layline_length = 1000
-        layline_angle = 40
 
-        layline1 = [
-            (target[0] + layline_length * np.cos(np.radians(layline_angle))),
-            (target[1] - layline_length * np.sin(np.radians(layline_angle))),
-        ]
-
-        layline2 = [
-            (target[0] - layline_length * np.cos(np.radians(layline_angle))),
-            (target[1] - layline_length * np.sin(np.radians(layline_angle))),
-        ]
-
-        pygame.draw.aaline(
-            self.window,
-            Renderer.INFO_COLOR,
-            (int(self.scale * target[0]), int(self.scale * target[1])),
-            (int(self.scale * layline1[0]), int(self.scale * layline1[1])),
-        )
-
-        pygame.draw.aaline(
-            self.window,
-            Renderer.INFO_COLOR,
-            (int(self.scale * target[0]), int(self.scale * target[1])),
-            (int(self.scale * layline2[0]), int(self.scale * layline2[1])),
-        )
 
         # Draw the target
         target_radius = int(self.target_rad * self.scale)
