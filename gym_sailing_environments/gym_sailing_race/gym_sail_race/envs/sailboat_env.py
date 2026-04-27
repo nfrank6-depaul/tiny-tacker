@@ -4,7 +4,7 @@ from gym_sail_race.envs.boat_env import BoatDiscreteEnv, BoatEnv
 from gym_sail_race.physics.sailboat import SailBoat
 
 
-class SailboatEnv(BoatEnv):
+class SailboatRaceEnv(BoatEnv):
     def __init__(self, render_mode=None):
         super().__init__(render_mode)
 
