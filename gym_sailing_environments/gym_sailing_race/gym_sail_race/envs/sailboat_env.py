@@ -53,6 +53,8 @@ class SailboatRaceEnv(BoatEnv):
     TARGET_SEQUENCE = TARGET_SEQUENCE
     MARK_REWARD = 50
     FINISH_REWARD = 100
+    ROUNDING_ZONE_MULTIPLIER = 2.5
+    INVALID_ROUNDING_PENALTY = 1.0
 
     def __init__(self, render_mode=None):
         super().__init__(render_mode)
@@ -61,11 +63,42 @@ class SailboatRaceEnv(BoatEnv):
         self.start_line = START_LINE
         self.show_start_line = True
         self.prev_boat_y = None
+        self.valid_port_rounding_started = False
 
     @property
     def active_target_index(self):
         return self.MARKS.index(self.TARGET)
-    
+
+    def _target_vector(self):
+        return np.array(self.TARGET) - np.array([self.boat.x, self.boat.y])
+
+    def _heading_vector(self):
+        return np.array([
+            np.cos(self.boat.heading),
+            np.sin(self.boat.heading),
+        ])
+
+    def _target_is_to_port(self):
+        heading_vec = self._heading_vector()
+        target_vec = self._target_vector()
+        cross = heading_vec[0] * target_vec[1] - heading_vec[1] * target_vec[0]
+        return cross > 0
+
+    def _inside_rounding_zone(self, distance2target):
+        return np.linalg.norm(distance2target) < self.TARGET_RAD * self.ROUNDING_ZONE_MULTIPLIER
+
+    def _target_hit_by_valid_rounding(self, distance2target):
+        inside_rounding_zone = self._inside_rounding_zone(distance2target)
+
+        if inside_rounding_zone and self._target_is_to_port():
+            self.valid_port_rounding_started = True
+
+        if self.valid_port_rounding_started and not inside_rounding_zone:
+            self.valid_port_rounding_started = False
+            return True
+
+        return False
+
     def step(self, action):
         previous_y = self.boat.y
         obs, reward, terminated, truncated, info = super().step(action)
@@ -87,6 +120,7 @@ class SailboatRaceEnv(BoatEnv):
     def _advance_target(self):
         self.mark_index += 1
         self.TARGET = self.TARGET_SEQUENCE[self.mark_index]
+        self.valid_port_rounding_started = False
         self.prev_distance2target = np.array([self.boat.x, self.boat.y]) - np.array(
             self.TARGET
         )
@@ -95,13 +129,16 @@ class SailboatRaceEnv(BoatEnv):
         terminated = False
         reward = -0.1
 
-        if np.linalg.norm(distance2target) < self.TARGET_RAD:
+        if self._target_hit_by_valid_rounding(distance2target):
             if self.mark_index == len(self.TARGET_SEQUENCE) - 1:
                 reward = self.FINISH_REWARD
                 terminated = True
             else:
                 reward = self.MARK_REWARD
                 self._advance_target()
+
+        elif self._inside_rounding_zone(distance2target) and not self._target_is_to_port():
+            reward -= self.INVALID_ROUNDING_PENALTY
 
         elif (
             self.boat.x < 0
@@ -128,6 +165,7 @@ class SailboatRaceEnv(BoatEnv):
         self.start_line = START_LINE
         self.show_start_line = True
         self.prev_boat_y = None
+        self.valid_port_rounding_started = False
         start_x, start_y = LEEWARD_MARK
         self.boat = SailBoat(
             x=start_x + self.BOAT_LENGTH,
