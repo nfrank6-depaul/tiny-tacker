@@ -4,7 +4,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
-from gym_sailing.utils.renderer import Renderer
+from gym_sail_race.utils.renderer import Renderer
 
 
 class BoatEnv(gym.Env):

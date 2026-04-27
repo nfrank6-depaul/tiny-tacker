@@ -1,7 +1,7 @@
 import numpy as np
 
-from gym_sailing.envs.boat_env import BoatDiscreteEnv, BoatEnv
-from gym_sailing.physics.sailboat import SailBoat
+from gym_sail_race.envs.boat_env import BoatDiscreteEnv, BoatEnv
+from gym_sail_race.physics.sailboat import SailBoat
 
 
 class SailboatEnv(BoatEnv):

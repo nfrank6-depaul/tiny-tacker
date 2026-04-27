@@ -1,5 +1,5 @@
 import numpy as np
-from gym_sailing.physics.boat import Boat, perpendicular, unit_vector
+from gym_sail_race.physics.boat import Boat, perpendicular, unit_vector
 
 
 class MotorBoat(Boat):

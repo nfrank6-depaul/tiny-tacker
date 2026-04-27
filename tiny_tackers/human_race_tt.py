@@ -9,8 +9,6 @@ import pygame
 
 builtins.quit = lambda *args, **kwargs: None
 
-# Resolve repo root from this script location:
-# tiny-tackers/tiny_tackers/human_race_tt.py -> tiny-tackers/
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(REPO_ROOT)
 
@@ -19,21 +17,14 @@ GYM_SAILING_PARENT = os.path.join(
     "gym_sailing_environments",
     "gym_sailing_race",
 )
-GYM_SAILING_PACKAGE = os.path.join(GYM_SAILING_PARENT, "gym_sail_race")
-
-if not os.path.isdir(GYM_SAILING_PACKAGE):
-    raise FileNotFoundError(
-        "Could not find the local gym_sailing package.\n"
-        f"Expected package folder at: {GYM_SAILING_PACKAGE}\n"
-        f"Current working directory: {os.getcwd()}\n"
-        "Confirm that the repo contains: "
-        "gym_sailing_environments/gym_sailing_race/gym_sail_race"
-    )
 
 sys.path.insert(0, GYM_SAILING_PARENT)
-# type ignore below so I stop seeing import error in VS Code. Package is here, but is defined by path above.
+
 import gym_sail_race  # type: ignore
 print("Loaded gym_sail_race from:", gym_sail_race.__file__)
+
+builtins.quit = lambda *args, **kwargs: None
+
 
 ENV_ID = "SailboatRace-v0"
 MAX_STEPS = 10_000
