@@ -139,15 +139,12 @@ class SailboatRaceEnv(BoatEnv):
         obs, reward, terminated, truncated, info = super().step(action)
 
         if self.show_start_line:
-            line_start, line_end = self.start_line
+            line_start, _ = self.start_line
             line_y = line_start[1]
-            min_x = min(line_start[0], line_end[0])
-            max_x = max(line_start[0], line_end[0])
 
             crossed_windward = previous_y < line_y <= self.boat.y
-            within_line_width = min_x <= self.boat.x <= max_x
 
-            if crossed_windward and within_line_width:
+            if crossed_windward:
                 self.show_start_line = False
 
         return obs, reward, terminated, truncated, info
